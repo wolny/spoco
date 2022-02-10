@@ -3,6 +3,7 @@ import collections
 import torch
 from torch.utils.data import DataLoader
 
+from spoco.datasets.brightfield import BrightfieldDataset
 from spoco.datasets.cityscapes import CityscapesDataset
 from spoco.datasets.cvppp import CVPPP2017Dataset
 
@@ -16,6 +17,9 @@ def create_train_val_loaders(args):
         train_dataset = CityscapesDataset(args.ds_path, phase='train', class_name=args.things_class, spoco=args.spoco,
                                           instance_ratio=args.instance_ratio)
         val_dataset = CityscapesDataset(args.ds_path, phase='val', class_name=args.things_class, spoco=args.spoco)
+    elif args.ds_name == 'brightfield':
+        train_dataset = BrightfieldDataset(args.ds_path, phase='train')
+        val_dataset = BrightfieldDataset(args.ds_path, phase='val')
     else:
         raise RuntimeError(f'Unsupported dataset: {args.ds_name}')
 
@@ -34,10 +38,12 @@ def create_test_loader(args):
         test_dataset = CVPPP2017Dataset(args.ds_path, phase='test', spoco=args.spoco)
     elif args.ds_name == 'cityscapes':
         test_dataset = CityscapesDataset(args.ds_path, phase='test', class_name=args.things_class, spoco=args.spoco)
+    elif args.ds_name == 'brightfield':
+        test_dataset = BrightfieldDataset(args.ds_path, phase='test')
     else:
         raise RuntimeError(f'Unsupported dataset {args.ds_name}')
 
-    if args.ds_name in ('cvppp', 'cityscapes'):
+    if args.ds_name in ('cvppp', 'cityscapes', 'brightfield'):
         collate_fn = dsb_prediction_collate
     else:
         collate_fn = default_prediction_collate
