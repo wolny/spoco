@@ -135,6 +135,7 @@ In order to train with a random 40% of all ground truth objects, just remove the
 Give a model trained on the CVPPP dataset, run the prediction using the following command:
 ```bash
 python spoco_predict.py \
+    --spoco \
     --ds-name cvppp --ds-path CVPPP_ROOT_DIR \
     --batch-size 4 \ 
     --model-path MODEL_DIR/best_checkpoint.pytorch \
@@ -151,6 +152,7 @@ Results will be saved in the given `OUTPUT_DIR` directory. For each test input i
 And similarly for the Cityscapes dataset 
 ```bash
 python spoco_predict.py \
+    --spoco \
     --ds-name cityscapes --ds-path CITYSCAPES_ROOT_DIR \ 
     --batch-size 16 \ 
     --model-path MODEL_DIR/best_checkpoint.pytorch \
@@ -173,14 +175,15 @@ python cluster_predictions.py \
 Where `PREDICTION_DIR` is the directory where h5 files containing network predictions are stored. Resulting segmentation
 will be saved as a separate dataset (named `segmentation`) inside each of the H5 prediction files.
 
-In order to cluster the Cityscapes predictions and extract the instances of class `car`:
+In order to cluster the Cityscapes predictions and extract the instances of class `car` and compute the segmentation scores on the validation set:
 ```bash
 python cluster_predictions.py \ 
     --ds-name cityscapes \
+    --gt-dir CITYSCAPES_ROOT_DIR/gtFine/val \
     --emb-dir PREDICTION_DIR \
     --sem-dir SEM_PREDICTION_DIR \
     --things-class car \
     --clustering msplus --delta-var 0.5 --delta-dist 2.0
 ```
-Where `SEM_PREDICTION_DIR` is the directory containing the semantic segmentation predictions for your validation/test images.
+Where `SEM_PREDICTION_DIR` is the directory containing the semantic segmentation predictions for your validation images.
 We used pre-trained DeepLabv3 model from [here](https://github.com/VainF/DeepLabV3Plus-Pytorch).

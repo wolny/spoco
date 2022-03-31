@@ -36,11 +36,12 @@ class AbstractTrainer:
         self.cos = args.cos
         self.schedule = args.schedule
         if not self.cos:
-            assert args.schedule is not None and len(args.schedule) > 0
+            assert args.schedule is not None and len(args.schedule) > 0 and all(0 < m < 1 for m in args.schedule)
         # create dataloaders
         self.train_loader, self.val_loader = create_train_val_loaders(args)
 
         self.checkpoint_dir = args.checkpoint_dir
+        self.save_all_checkpoints = args.save_all_checkpoints
         self.max_num_iterations = args.max_num_iterations
         self.max_num_epochs = args.max_num_epochs
 
@@ -73,7 +74,7 @@ class AbstractTrainer:
         else:
             # multistep lr schedule
             for milestone in self.schedule:
-                lr *= 0.1 if epoch >= milestone else 1.
+                lr *= 0.1 if epoch >= int(milestone * self.max_num_epochs) else 1.
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = lr
 
@@ -100,7 +101,11 @@ class AbstractTrainer:
                 self.best_validation_loss = validation_loss
 
             if self.rank == 0:
-                checkpoint_file = os.path.join(self.checkpoint_dir, 'checkpoint_{:05d}.pytorch'.format(epoch))
+                if self.save_all_checkpoints:
+                    checkpoint_name = 'checkpoint_{:05d}.pytorch'.format(epoch)
+                else:
+                    checkpoint_name = 'last_checkpoint.pytorch'
+                checkpoint_file = os.path.join(self.checkpoint_dir, checkpoint_name)
                 save_checkpoint(
                     {
                         'epoch': epoch + 1,
@@ -142,7 +147,7 @@ class AbstractTrainer:
                 input_img = minmax_norm(input_img.detach().cpu().numpy())
                 output_img = pca_project(output_img.detach().cpu().numpy())
                 target_img = target_img.detach().cpu().numpy().astype(np.uint8)
-                target_img = label2rgb(target_img)
+                target_img = label2rgb(target_img, bg_label=0)
                 self.writer.add_image(prefix + f'{i}_input', input_img, self.num_iterations)
                 self.writer.add_image(prefix + f'{i}_output', output_img, self.num_iterations)
                 self.writer.add_image(prefix + f'{i}_target', target_img, self.num_iterations, dataformats='HWC')
