@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from spoco.datasets.utils import create_train_val_loaders
 from spoco.losses import create_loss
-from spoco.model import create_model, get_number_of_learnable_parameters, UNet3D
+from spoco.model import create_model, get_number_of_learnable_parameters, UNet3D, SpocoUNet
 from spoco.utils import RunningAverage, save_checkpoint, create_optimizer, pca_project, minmax_norm
 
 
@@ -22,6 +22,8 @@ class AbstractTrainer:
         print(model)
         print(f'Number of learnable params {get_number_of_learnable_parameters(model)}')
         self.is3d = isinstance(model, UNet3D)
+        if isinstance(model, SpocoUNet):
+            self.is3d = isinstance(model.net_f, UNet3D)
         self.model = nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         print(f"Using {torch.cuda.device_count()} GPUs for training")
 
@@ -141,7 +143,7 @@ class AbstractTrainer:
                     z = input_img.size(1) // 2
                     input_img = input_img[:, z, ...]
                     output_img = output_img[:, z, ...]
-                    target_img = target_img[:, z, ...]
+                    target_img = target_img[z, ...]
 
                 # PCA project the output
                 input_img = minmax_norm(input_img.detach().cpu().numpy())

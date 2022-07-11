@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 from torch import optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-SUPPORTED_DATASETS = ['cvppp', 'cityscapes', 'ovules', 'mitoem', 'stem', 'brightfield']
+SUPPORTED_DATASETS = ['cvppp', 'cityscapes', 'h5', 'brightfield']
 
 
 class GaussianKernel(nn.Module):

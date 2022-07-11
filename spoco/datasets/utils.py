@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from spoco.datasets.brightfield import BrightfieldDataset
 from spoco.datasets.cityscapes import CityscapesDataset
 from spoco.datasets.cvppp import CVPPP2017Dataset
+from spoco.datasets.hdf5 import create_h5_dataset
 
 
 def create_train_val_loaders(args):
@@ -20,6 +21,9 @@ def create_train_val_loaders(args):
     elif args.ds_name == 'brightfield':
         train_dataset = BrightfieldDataset(args.ds_path, phase='train')
         val_dataset = BrightfieldDataset(args.ds_path, phase='val')
+    elif args.ds_name == 'h5':
+        train_dataset = create_h5_dataset(args, phase='train')
+        val_dataset = create_h5_dataset(args, phase='val')
     else:
         raise RuntimeError(f'Unsupported dataset: {args.ds_name}')
 
@@ -40,6 +44,8 @@ def create_test_loader(args):
         test_dataset = CityscapesDataset(args.ds_path, phase='test', class_name=args.things_class, spoco=args.spoco)
     elif args.ds_name == 'brightfield':
         test_dataset = BrightfieldDataset(args.ds_path, phase='test')
+    elif args.ds_name == 'h5':
+        test_dataset = create_h5_dataset(args, phase='test')
     else:
         raise RuntimeError(f'Unsupported dataset {args.ds_name}')
 

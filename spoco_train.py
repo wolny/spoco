@@ -23,6 +23,12 @@ parser.add_argument('--instance-ratio', type=float, default=None,
                     help='ratio of ground truth instances that should be taken for training')
 parser.add_argument('--batch-size', type=int, default=4)
 parser.add_argument('--num-workers', type=int, default=4)
+# h5 datasets
+parser.add_argument('--patch-size', type=int, nargs="+", default=[64, 128, 128],
+                    help="Patch shape")
+parser.add_argument('--stride-size', type=int, nargs="+", default=None,
+                    help="Stride shape. If None, random patches will be taken from the image")
+parser.add_argument('--global-norm', action='store_true', default=False, help="Compute mean/std intensity globally")
 
 # model config
 parser.add_argument('--model-name', type=str, default="UNet2D", help="UNet2D or UNet3D")
@@ -58,6 +64,7 @@ parser.add_argument('--schedule', type=float, nargs="+", help="Multistep LR sche
 parser.add_argument('--cos', action='store_true', default=False, help="Use cosine learning rate scheduler")
 
 # trainer config
+parser.add_argument('--debug', action='store_true', help='Use single GPU instead of distributed training', default=False)
 parser.add_argument('--spoco', action='store_true', default=False, help="Indicate SPOCO training with consistency loss")
 parser.add_argument('--save-all-checkpoints', action='store_true', default=False, help="Save checkpoint after every epoch")
 parser.add_argument('--checkpoint-dir', type=str, required=True, help="Model and tensorboard logs directory")
@@ -123,8 +130,12 @@ def main():
         torch.backends.cudnn.deterministic = True
         print('Using CuDNN deterministic setting. This may slow down the training!')
 
-    nprocs = torch.cuda.device_count()
-    mp.spawn(train, args=(args,), nprocs=nprocs)
+    if args.debug:
+        # debug on a single GPU
+        train(0, args)
+    else:
+        nprocs = torch.cuda.device_count()
+        mp.spawn(train, args=(args,), nprocs=nprocs)
 
 
 if __name__ == '__main__':
