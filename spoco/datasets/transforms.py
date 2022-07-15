@@ -472,7 +472,7 @@ def get_augmentation(aug_name, dataset_name, seed, phase, **kwargs):
     std = kwargs.get('std', None)
 
     # test time
-    if 'standard' in aug_name and phase != 'train':
+    if phase != 'train':
         if dataset_name == 'raw':
             return Compose([
                 Standardize(mean=mean, std=std),
@@ -480,7 +480,7 @@ def get_augmentation(aug_name, dataset_name, seed, phase, **kwargs):
             ])
         else:
             return Compose([
-                ToTensor(expand_dims=True)
+                ToTensor(expand_dims=False, dtype='int64')
             ])
 
     # train time
