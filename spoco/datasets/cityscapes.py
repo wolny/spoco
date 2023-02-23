@@ -4,7 +4,7 @@ import random
 import numpy as np
 import torch
 from PIL import Image
-from torchvision.transforms import transforms
+from torchvision.transforms import transforms, InterpolationMode
 
 from spoco.transforms import ImgNormalize, Relabel, GaussianBlur
 
@@ -71,7 +71,7 @@ TEST_RAW_TRANSFORM = transforms.Compose(
 
 LABEL_TRANSFORM = transforms.Compose(
     [
-        transforms.RandomResizedCrop((384, 768), scale=(0.5, 2.), interpolation=0),
+        transforms.RandomResizedCrop((384, 768), scale=(0.5, 2.), interpolation=InterpolationMode.NEAREST),
         transforms.RandomHorizontalFlip(),
         Relabel(run_cc=False),
         transforms.ToTensor()
@@ -80,7 +80,7 @@ LABEL_TRANSFORM = transforms.Compose(
 
 TEST_LABEL_TRANSFORM = transforms.Compose(
     [
-        transforms.Resize(size=(384, 768), interpolation=Image.NEAREST),
+        transforms.Resize(size=(384, 768), interpolation=InterpolationMode.NEAREST),
         Relabel(run_cc=False),
         transforms.ToTensor()
     ]
@@ -92,9 +92,9 @@ EXTENDED_TRANSFORM = transforms.Compose(
             transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
         ], p=0.8),
         transforms.RandomGrayscale(p=0.2),
-        GaussianBlur([.1, 2.]),
+        GaussianBlur([.1, 2.], p=0.5),
         transforms.ToTensor(),
-        ImgNormalize()
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ]
 )
 
@@ -110,7 +110,7 @@ class CityscapesDataset:
         self.spoco = spoco
         self.img_normalize = transforms.Compose([
             transforms.ToTensor(),
-            ImgNormalize()
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
 
         self.images_base = os.path.join(root_dir, 'leftImg8bit', phase)
