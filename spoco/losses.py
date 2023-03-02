@@ -687,7 +687,7 @@ class SpocoContrastiveLoss(AbstractContrastiveLoss):
             # compute instance-based loss
             if instance_masks is None:
                 return 0.
-            return self.instance_loss(instance_pmaps, instance_masks).mean()
+            return self.instance_loss(instance_pmaps, instance_masks)
 
     # kernel function used to convert the distance map (i.e. `||embeddings - anchor_embedding||`) into an instance mask
     class Gaussian(nn.Module):
